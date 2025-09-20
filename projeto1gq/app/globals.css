@@ -1,0 +1,46 @@
+html,
+body {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: var(--font-geist-sans);
+  color: #333;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Fundo da página */
+.background-field {
+  background-image: url('/images/campo.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+}
+
+.background-field::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+/* O contêiner principal agora tem um padding inferior maior */
+.page-content-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100%;
+  padding: 1rem;
+  padding-bottom: 2rem; /* A folga no rodapé */
+  position: relative;
+  z-index: 1;
+}

@@ -1,0 +1,73 @@
+/* Container do conteúdo da página, centralizado */
+.mainContainer {
+  text-align: center;
+  padding: 2rem;
+  width: 100%;
+}
+
+/* Título principal do site */
+.title {
+  color: #ffffff;
+  font-size: 3rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 2rem;
+}
+
+/* Container que organiza os dois cards lado a lado */
+.cardsContainer {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  align-items: stretch;
+  flex-wrap: wrap; /* Permite que os cards fiquem um abaixo do outro em telas menores */
+}
+
+/* Estilo de cada card */
+.card {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 2.5rem;
+  width: 380px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Título do card */
+.cardTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #235219;
+}
+
+/* Descrição do card */
+.cardDescription {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* Estilo do botão */
+.cardButton {
+  background-color: #235219;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  align-self: center; /* Centraliza o botão */
+  width: 100%; /* Ocupa a largura total do card */
+}
+
+.cardButton:hover {
+  background-color: #38702c;
+}
