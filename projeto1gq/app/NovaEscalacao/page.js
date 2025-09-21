@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from './page.module.css';
@@ -17,7 +17,7 @@ const formationOptions = ['4-4-2', '4-3-3', '4-2-3-1', '3-5-2'];
 const totalPlayers = 11;
 const initialPositions = Array(totalPlayers).fill(null);
 
-export default function CreateLineupPage() {
+function CreateLineupComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
@@ -121,7 +121,7 @@ export default function CreateLineupPage() {
   const handleDrop = (e, targetIndex) => {
     e.preventDefault();
     const playerData = e.dataTransfer.getData('player');
-    if (!playerData) return; // Corrigido o erro de sintaxe
+    if (!playerData) return;
 
     const player = JSON.parse(playerData);
     const sourceIndex = e.dataTransfer.getData('sourceIndex');
@@ -365,5 +365,13 @@ export default function CreateLineupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NovaEscalacaoPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreateLineupComponent />
+    </Suspense>
   );
 }
