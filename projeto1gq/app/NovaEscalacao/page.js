@@ -18,6 +18,10 @@ const totalPlayers = 11;
 const initialPositions = Array(totalPlayers).fill(null);
 
 export default function CreateLineupPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get('edit');
+
   const [formation, setFormation] = useState('4-3-3');
   const [lineupName, setLineupName] = useState('');
   const [leagues, setLeagues] = useState([]);
@@ -26,11 +30,8 @@ export default function CreateLineupPage() {
   const [selectedTeam, setSelectedTeam] = useState('');
   const [players, setPlayers] = useState([]);
   const [lineupPositions, setLineupPositions] = useState(initialPositions);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const editIndex = searchParams.get('edit');
 
-  // Função para buscar as ligas do back-end
+  // Efeito para carregar as ligas do back-end
   const fetchLeagues = async () => {
     try {
       const response = await fetch('http://localhost:3001/api/leagues');
@@ -65,6 +66,26 @@ export default function CreateLineupPage() {
     }
   };
 
+  // Efeito para carregar a escalação para edição do back-end
+  useEffect(() => {
+    if (editId) {
+      const fetchEscalacao = async () => {
+        try {
+          const response = await fetch(`http://localhost:3001/api/escalacoes/${editId}`);
+          const data = await response.json();
+          if (data) {
+            setLineupName(data.name);
+            setFormation(data.formation);
+            setLineupPositions(data.players);
+          }
+        } catch (error) {
+          console.error("Erro ao buscar escalação para edição:", error);
+        }
+      };
+      fetchEscalacao();
+    }
+  }, [editId]);
+
   useEffect(() => {
     fetchLeagues();
   }, []);
@@ -87,18 +108,6 @@ export default function CreateLineupPage() {
     }
   }, [selectedTeam]);
 
-  useEffect(() => {
-    if (editIndex !== null) {
-      const savedEscalacoes = JSON.parse(localStorage.getItem('escalacoes')) || [];
-      const lineupToEdit = savedEscalacoes[editIndex];
-      if (lineupToEdit) {
-        setLineupName(lineupToEdit.name);
-        setFormation(lineupToEdit.formation);
-        setLineupPositions(lineupToEdit.players);
-      }
-    }
-  }, [editIndex]);
-
   // Lógica de Drag and Drop
   const handleDragStart = (e, player, sourceIndex = null) => {
     e.dataTransfer.setData('player', JSON.stringify(player));
@@ -111,17 +120,20 @@ export default function CreateLineupPage() {
 
   const handleDrop = (e, targetIndex) => {
     e.preventDefault();
-    const player = JSON.parse(e.dataTransfer.getData('player'));
+    const playerData = e.dataTransfer.getData('player');
+    if (!playerData) return; // Corrigido o erro de sintaxe
+
+    const player = JSON.parse(playerData);
     const sourceIndex = e.dataTransfer.getData('sourceIndex');
-  
+
     const newPositions = [...lineupPositions];
-    
+
     if (sourceIndex === 'null') {
       newPositions[targetIndex] = player;
     } else {
       const oldPlayer = lineupPositions[sourceIndex];
       const targetPlayer = lineupPositions[targetIndex];
-  
+
       newPositions[targetIndex] = oldPlayer;
       newPositions[sourceIndex] = targetPlayer;
     }
@@ -145,23 +157,23 @@ export default function CreateLineupPage() {
       '4-2-3-1': [4, 2, 3, 1],
       '3-5-2': [3, 5, 2],
     };
-    
+
     const rows = [];
     let positionIndex = 1;
-    
-    const formationParts = formationMap[formation].slice().reverse();
+
+    const formationParts = (formationMap[formation] || formationMap['4-3-3']).slice().reverse();
     for (const numPlayers of formationParts) {
       const playerRow = [];
       for (let i = 0; i < numPlayers; i++) {
         const currentPositionIndex = positionIndex + i;
         playerRow.push(
-          <div 
-            key={currentPositionIndex} 
+          <div
+            key={currentPositionIndex}
             className={styles.playerContainer}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, currentPositionIndex)}
           >
-            <div 
+            <div
               className={styles.playerCircle}
               draggable={lineupPositions[currentPositionIndex] !== null}
               onDragStart={(e) => handleDragStart(e, lineupPositions[currentPositionIndex], currentPositionIndex)}
@@ -180,15 +192,15 @@ export default function CreateLineupPage() {
       );
       positionIndex += numPlayers;
     }
-    
+
     rows.push(
       <div key="gk" className={styles.playerRow} style={{ gridTemplateColumns: '1fr' }}>
-        <div 
+        <div
           className={styles.playerContainer}
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, 0)}
         >
-          <div 
+          <div
             className={styles.playerCircle}
             draggable={lineupPositions[0] !== null}
             onDragStart={(e) => handleDragStart(e, lineupPositions[0], 0)}
@@ -200,11 +212,11 @@ export default function CreateLineupPage() {
         </div>
       </div>
     );
-    
+
     return rows;
   };
 
-  const handleSaveLineup = () => {
+  const handleSaveLineup = async () => {
     if (!lineupName) {
       alert('Por favor, dê um nome à sua escalação antes de salvar.');
       return;
@@ -219,17 +231,28 @@ export default function CreateLineupPage() {
       teamId: selectedTeam,
     };
 
-    let existingEscalacoes = JSON.parse(localStorage.getItem('escalacoes')) || [];
+    const method = editId ? 'PUT' : 'POST';
+    const url = editId ? `http://localhost:3001/api/escalacoes/${editId}` : `http://localhost:3001/api/escalacoes`;
 
-    if (editIndex !== null) {
-      existingEscalacoes[editIndex] = updatedEscalacao;
-    } else {
-      existingEscalacoes.push(updatedEscalacao);
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedEscalacao),
+      });
+
+      if (response.ok) {
+        alert('Escalação salva com sucesso!');
+        router.push('/MinhasEscalacoes');
+      } else {
+        alert('Erro ao salvar a escalação.');
+      }
+    } catch (error) {
+      console.error("Erro ao salvar escalação:", error);
+      alert('Erro ao conectar com o servidor.');
     }
-    
-    localStorage.setItem('escalacoes', JSON.stringify(existingEscalacoes));
-
-    router.push('/MinhasEscalacoes');
   };
 
   return (
@@ -301,7 +324,7 @@ export default function CreateLineupPage() {
               </select>
             </div>
             <button className={styles.saveButton} onClick={handleSaveLineup}>
-              Salvar Escalação
+              {editId ? 'Salvar Edição' : 'Salvar Escalação'}
             </button>
           </div>
         </div>

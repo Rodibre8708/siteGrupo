@@ -27,42 +27,64 @@ export default function MinhasEscalacoesPage() {
   const [dropdownOpenIndex, setDropdownOpenIndex] = useState(null);
   const router = useRouter();
 
+  const recarregarEscalacoes = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/escalacoes');
+      const data = await response.json();
+      setEscalacoes(data);
+    } catch (error) {
+      console.error("Erro ao buscar escalações:", error);
+    }
+  };
+
   useEffect(() => {
-    const savedEscalacoes = JSON.parse(localStorage.getItem('escalacoes')) || [];
-    setEscalacoes(savedEscalacoes);
+    recarregarEscalacoes();
   }, []);
 
-  const handleCardClick = (index) => {
-    router.push(`/NovaEscalacao?edit=${index}`);
+  const handleCardClick = (id) => {
+    router.push(`/NovaEscalacao?edit=${id}`);
   };
 
-  const toggleDropdown = (index, e) => {
+  const toggleDropdown = (id, e) => {
     e.stopPropagation();
-    setDropdownOpenIndex(dropdownOpenIndex === index ? null : index);
+    setDropdownOpenIndex(dropdownOpenIndex === id ? null : id);
   };
 
-  const handleRename = (index, e) => {
+  const handleRename = async (id, e) => {
     e.stopPropagation();
     const newName = window.prompt("Digite o novo nome para a escalação:");
     if (newName && newName.trim() !== '') {
-      const updatedEscalacoes = [...escalacoes];
-      updatedEscalacoes[index].name = newName;
-      setEscalacoes(updatedEscalacoes);
-      localStorage.setItem('escalacoes', JSON.stringify(updatedEscalacoes));
+      try {
+        await fetch(`http://localhost:3001/api/escalacoes/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: newName }),
+        });
+        recarregarEscalacoes();
+      } catch (error) {
+        console.error("Erro ao renomear a escalação:", error);
+      }
     }
     setDropdownOpenIndex(null);
   };
 
-  const handleDelete = (indexToDelete, e) => {
+  const handleDelete = async (id, e) => {
     e.stopPropagation();
     if (window.confirm("Tem certeza de que deseja deletar esta escalação?")) {
-      const updatedEscalacoes = escalacoes.filter((_, index) => index !== indexToDelete);
-      setEscalacoes(updatedEscalacoes);
-      localStorage.setItem('escalacoes', JSON.stringify(updatedEscalacoes));
+      try {
+        await fetch(`http://localhost:3001/api/escalacoes/${id}`, {
+          method: 'DELETE',
+        });
+        recarregarEscalacoes();
+      } catch (error) {
+        console.error("Erro ao deletar a escalação:", error);
+      }
     }
     setDropdownOpenIndex(null);
   };
-  
+
   return (
     <div className={styles.mainContainer}>
       <div className={styles.topBar}>
@@ -81,20 +103,20 @@ export default function MinhasEscalacoesPage() {
         {escalacoes.length === 0 ? (
           <p className={styles.emptyMessage}>Nenhuma escalação salva. Crie sua primeira escalação!</p>
         ) : (
-          escalacoes.map((escalacao, index) => (
-            <div key={index} className={styles.lineupCard} onClick={() => handleCardClick(index)}>
+          escalacoes.map((escalacao) => (
+            <div key={escalacao.id} className={styles.lineupCard} onClick={() => handleCardClick(escalacao.id)}>
               <div className={styles.cardHeader}>
                 <h2 className={styles.cardTitle}>{escalacao.name}</h2>
                 <div className={styles.cardActions}>
-                  <button className={styles.dropdownButton} onClick={(e) => toggleDropdown(index, e)}>
+                  <button className={styles.dropdownButton} onClick={(e) => toggleDropdown(escalacao.id, e)}>
                     <ThreeDotsIcon />
                   </button>
-                  {dropdownOpenIndex === index && (
+                  {dropdownOpenIndex === escalacao.id && (
                     <div className={styles.dropdownMenu}>
-                      <button onClick={(e) => handleRename(index, e)} className={styles.menuItem}>
+                      <button onClick={(e) => handleRename(escalacao.id, e)} className={styles.menuItem}>
                         Renomear
                       </button>
-                      <button onClick={(e) => handleDelete(index, e)} className={styles.menuItem}>
+                      <button onClick={(e) => handleDelete(escalacao.id, e)} className={styles.menuItem}>
                         Deletar
                       </button>
                     </div>
@@ -106,7 +128,7 @@ export default function MinhasEscalacoesPage() {
                 <span className={styles.detailItem}>{escalacao.date}</span>
               </div>
               <p className={styles.playerSummary}>
-                {escalacao.players.filter(p => p).length > 0
+                {escalacao.players && escalacao.players.filter(p => p).length > 0
                   ? `${escalacao.players.filter(p => p).length} jogadores selecionados`
                   : 'Nenhum jogador selecionado'}
               </p>
