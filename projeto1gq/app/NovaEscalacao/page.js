@@ -1,139 +1,84 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import styles from "./page.module.css";
-import { FaUserCircle } from "react-icons/fa";
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import styles from './page.module.css';
+import { FaUserCircle } from 'react-icons/fa';
 
 // Ícone de voltar
 const BackIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={2}
-    stroke="currentColor"
-    className="w-6 h-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
-    />
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
   </svg>
 );
 
-const formationOptions = ["4-4-2", "4-3-3", "4-2-3-1", "3-5-2"];
-
-const getFormationGrid = (formation) => {
-  const parts = formation.split("-").map(Number);
-  const rows = [];
-
-  // Adiciona as linhas de jogadores
-  for (let i = parts.length - 1; i >= 0; i--) {
-    rows.push(
-      <div
-        key={i}
-        className={styles.playerRow}
-        style={{ gridTemplateColumns: `repeat(${parts[i]}, 1fr)` }}
-      >
-        {[...Array(parts[i])].map((_, idx) => (
-          <div key={idx} className={styles.playerContainer}>
-            <div className={styles.playerCircle}></div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  // Adiciona o goleiro na última linha
-  rows.push(
-    <div
-      key="gk"
-      className={styles.playerRow}
-      style={{ gridTemplateColumns: "1fr" }}
-    >
-      <div className={styles.playerContainer}>
-        <div className={styles.playerCircle}></div>
-      </div>
-    </div>
-  );
-
-  return rows;
-};
+const formationOptions = ['4-4-2', '4-3-3', '4-2-3-1', '3-5-2'];
+const totalPlayers = 11;
+const initialPositions = Array(totalPlayers).fill(null);
 
 export default function CreateLineupPage() {
-  const [formation, setFormation] = useState("4-3-3");
-  const [lineupName, setLineupName] = useState("");
+  const [formation, setFormation] = useState('4-3-3');
+  const [lineupName, setLineupName] = useState('');
   const [leagues, setLeagues] = useState([]);
-  const [selectedLeague, setSelectedLeague] = useState("");
+  const [selectedLeague, setSelectedLeague] = useState('');
   const [teams, setTeams] = useState([]);
-  const [selectedTeam, setSelectedTeam] = useState("");
+  const [selectedTeam, setSelectedTeam] = useState('');
   const [players, setPlayers] = useState([]);
+  const [lineupPositions, setLineupPositions] = useState(initialPositions);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editIndex = searchParams.get('edit');
 
   // Função para buscar as ligas do back-end
   const fetchLeagues = async () => {
     try {
-      const response = await fetch("http://localhost:3001/api/leagues");
+      const response = await fetch('http://localhost:3001/api/leagues');
       const data = await response.json();
       setLeagues(data.competitions);
     } catch (error) {
-      console.error("Falha ao buscar as ligas:", error);
+      console.error('Falha ao buscar as ligas:', error);
     }
   };
 
   // Função para buscar os times do back-end
   const fetchTeams = async (leagueId) => {
-    if (!leagueId) {
-      return;
-    }
+    if (!leagueId) return;
     try {
-      const response = await fetch(
-        `http://localhost:3001/api/teams?leagueId=${leagueId}`
-      );
+      const response = await fetch(`http://localhost:3001/api/teams?leagueId=${leagueId}`);
       const data = await response.json();
       setTeams(data.teams);
     } catch (error) {
-      console.error("Falha ao buscar os times:", error);
+      console.error('Falha ao buscar os times:', error);
     }
   };
 
-  // Nova função para buscar os jogadores do back-end
+  // Função para buscar os jogadores do back-end
   const fetchPlayers = async (teamId) => {
-    if (!teamId) {
-      return;
-    }
-
+    if (!teamId) return;
     try {
-      const response = await fetch(
-        `http://localhost:3001/api/players?teamId=${teamId}`
-      );
+      const response = await fetch(`http://localhost:3001/api/players?teamId=${teamId}`);
       const data = await response.json();
-      setPlayers(data); // A API retorna um array de jogadores diretamente
+      setPlayers(data);
     } catch (error) {
-      console.error("Falha ao buscar os jogadores:", error);
+      console.error('Falha ao buscar os jogadores:', error);
     }
   };
 
-  // Efeito para carregar as ligas na montagem
   useEffect(() => {
     fetchLeagues();
   }, []);
 
-  // Efeito para carregar os times quando a liga selecionada muda
   useEffect(() => {
     if (selectedLeague) {
       fetchTeams(selectedLeague);
     } else {
       setTeams([]);
-      setSelectedTeam("");
+      setSelectedTeam('');
       setPlayers([]);
     }
   }, [selectedLeague]);
 
-  // Efeito para carregar os jogadores quando o time selecionado muda
   useEffect(() => {
     if (selectedTeam) {
       fetchPlayers(selectedTeam);
@@ -142,27 +87,149 @@ export default function CreateLineupPage() {
     }
   }, [selectedTeam]);
 
+  useEffect(() => {
+    if (editIndex !== null) {
+      const savedEscalacoes = JSON.parse(localStorage.getItem('escalacoes')) || [];
+      const lineupToEdit = savedEscalacoes[editIndex];
+      if (lineupToEdit) {
+        setLineupName(lineupToEdit.name);
+        setFormation(lineupToEdit.formation);
+        setLineupPositions(lineupToEdit.players);
+      }
+    }
+  }, [editIndex]);
+
+  // Lógica de Drag and Drop
+  const handleDragStart = (e, player, sourceIndex = null) => {
+    e.dataTransfer.setData('player', JSON.stringify(player));
+    e.dataTransfer.setData('sourceIndex', sourceIndex);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, targetIndex) => {
+    e.preventDefault();
+    const player = JSON.parse(e.dataTransfer.getData('player'));
+    const sourceIndex = e.dataTransfer.getData('sourceIndex');
+  
+    const newPositions = [...lineupPositions];
+    
+    if (sourceIndex === 'null') {
+      newPositions[targetIndex] = player;
+    } else {
+      const oldPlayer = lineupPositions[sourceIndex];
+      const targetPlayer = lineupPositions[targetIndex];
+  
+      newPositions[targetIndex] = oldPlayer;
+      newPositions[sourceIndex] = targetPlayer;
+    }
+    setLineupPositions(newPositions);
+  };
+
+  const handleRemovePlayer = (e) => {
+    e.preventDefault();
+    const sourceIndex = e.dataTransfer.getData('sourceIndex');
+    if (sourceIndex !== 'null') {
+      const newPositions = [...lineupPositions];
+      newPositions[sourceIndex] = null;
+      setLineupPositions(newPositions);
+    }
+  };
+
+  const renderFormation = () => {
+    const formationMap = {
+      '4-4-2': [4, 4, 2],
+      '4-3-3': [4, 3, 3],
+      '4-2-3-1': [4, 2, 3, 1],
+      '3-5-2': [3, 5, 2],
+    };
+    
+    const rows = [];
+    let positionIndex = 1;
+    
+    const formationParts = formationMap[formation].slice().reverse();
+    for (const numPlayers of formationParts) {
+      const playerRow = [];
+      for (let i = 0; i < numPlayers; i++) {
+        const currentPositionIndex = positionIndex + i;
+        playerRow.push(
+          <div 
+            key={currentPositionIndex} 
+            className={styles.playerContainer}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, currentPositionIndex)}
+          >
+            <div 
+              className={styles.playerCircle}
+              draggable={lineupPositions[currentPositionIndex] !== null}
+              onDragStart={(e) => handleDragStart(e, lineupPositions[currentPositionIndex], currentPositionIndex)}
+            >
+              {lineupPositions[currentPositionIndex] && (
+                <span className={styles.playerInfo}>{lineupPositions[currentPositionIndex].name}</span>
+              )}
+            </div>
+          </div>
+        );
+      }
+      rows.push(
+        <div key={rows.length} className={styles.playerRow} style={{ gridTemplateColumns: `repeat(${numPlayers}, 1fr)` }}>
+          {playerRow}
+        </div>
+      );
+      positionIndex += numPlayers;
+    }
+    
+    rows.push(
+      <div key="gk" className={styles.playerRow} style={{ gridTemplateColumns: '1fr' }}>
+        <div 
+          className={styles.playerContainer}
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, 0)}
+        >
+          <div 
+            className={styles.playerCircle}
+            draggable={lineupPositions[0] !== null}
+            onDragStart={(e) => handleDragStart(e, lineupPositions[0], 0)}
+          >
+            {lineupPositions[0] && (
+              <span className={styles.playerInfo}>{lineupPositions[0].name}</span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+    
+    return rows;
+  };
+
   const handleSaveLineup = () => {
     if (!lineupName) {
-      alert("Por favor, dê um nome à sua escalação antes de salvar.");
+      alert('Por favor, dê um nome à sua escalação antes de salvar.');
       return;
     }
 
-    const newEscalacao = {
+    const updatedEscalacao = {
       name: lineupName,
       formation: formation,
-      players: [],
-      date: new Date().toLocaleDateString("pt-BR"),
+      players: lineupPositions,
+      date: new Date().toLocaleDateString('pt-BR'),
       leagueId: selectedLeague,
       teamId: selectedTeam,
     };
 
-    const existingEscalacoes =
-      JSON.parse(localStorage.getItem("escalacoes")) || [];
-    const updatedEscalacoes = [...existingEscalacoes, newEscalacao];
-    localStorage.setItem("escalacoes", JSON.stringify(updatedEscalacoes));
+    let existingEscalacoes = JSON.parse(localStorage.getItem('escalacoes')) || [];
 
-    router.push("/MinhasEscalacoes");
+    if (editIndex !== null) {
+      existingEscalacoes[editIndex] = updatedEscalacao;
+    } else {
+      existingEscalacoes.push(updatedEscalacao);
+    }
+    
+    localStorage.setItem('escalacoes', JSON.stringify(existingEscalacoes));
+
+    router.push('/MinhasEscalacoes');
   };
 
   return (
@@ -197,7 +264,7 @@ export default function CreateLineupPage() {
                 onChange={(e) => setSelectedLeague(e.target.value)}
               >
                 <option value="">Selecione a liga...</option>
-                {leagues.map((league) => (
+                {leagues && leagues.map((league) => (
                   <option key={league.id} value={league.id}>
                     {league.name}
                   </option>
@@ -212,7 +279,7 @@ export default function CreateLineupPage() {
                 onChange={(e) => setSelectedTeam(e.target.value)}
               >
                 <option value="">Selecione o time...</option>
-                {teams.map((team) => (
+                {teams && teams.map((team) => (
                   <option key={team.id} value={team.id}>
                     {team.name}
                   </option>
@@ -240,13 +307,8 @@ export default function CreateLineupPage() {
         </div>
 
         <div className={styles.fieldPreviewCard}>
-          <div className={styles.fieldLines}>
-            <div className={styles.penaltyBox}></div>
-            <div className={styles.penaltyArc}></div>
-            <div className={styles.centerCircle}></div>
-          </div>
           <div className={styles.formationDisplay}>
-            {getFormationGrid(formation)}
+            {renderFormation()}
           </div>
         </div>
 
@@ -255,17 +317,25 @@ export default function CreateLineupPage() {
             <h2 className={styles.playerSelectionTitle}>
               Selecionar Jogadores
             </h2>
-            <div className={styles.playerGrid}>
-              {players.length > 0 ? (
+            <div
+              className={styles.playerGrid}
+              onDragOver={handleDragOver}
+              onDrop={handleRemovePlayer}
+            >
+              {players && players.length > 0 ? (
                 players.map((player) => (
-                  <div key={player.id} className={styles.playerCard}>
-                    {/* A API Football-Data.org não tem fotos no plano gratuito, então usamos um ícone */}
-                    <FaUserCircle size={40} color="#38702c" />
+                  <div
+                    key={player.id}
+                    className={styles.playerCard}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, player, null)}
+                  >
+                    <FaUserCircle size={24} color="#38702c" />
                     <span className={styles.playerName}>{player.name}</span>
                   </div>
                 ))
               ) : (
-                <p>Selecione um time para ver a lista de jogadores.</p>
+                <p className={styles.emptyPlayerMessage}>Selecione um time para ver a lista de jogadores.</p>
               )}
             </div>
           </div>

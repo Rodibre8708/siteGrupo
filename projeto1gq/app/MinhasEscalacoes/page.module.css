@@ -3,6 +3,8 @@
   max-width: 1000px;
   padding: 2rem;
   text-align: center;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .topBar {
@@ -21,6 +23,11 @@
   font-weight: 600;
   color: #235219;
   margin: 0;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
 }
 
 .backButton,
@@ -65,4 +72,126 @@
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
   margin-top: 5rem;
   width: 100%;
+}
+
+.lineupCard {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  position: relative;
+}
+
+.lineupCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #235219;
+  margin-bottom: 0.25rem;
+}
+
+.cardActions {
+  position: relative;
+}
+
+.dropdownButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 0.25rem;
+  transition: color 0.3s ease;
+}
+
+.dropdownButton:hover {
+  color: #333;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  z-index: 10;
+}
+
+.menuItem {
+  background: none;
+  border: none;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  color: #333;
+  transition: background-color 0.2s ease;
+}
+
+.menuItem:hover {
+  background-color: #f1f1f1;
+}
+
+/* Estilos de pré-visualização da formação */
+.fieldPreview {
+  background-color: #2e7d32;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.playerRow {
+  display: grid;
+  width: 100%;
+  gap: 1rem;
+  justify-content: space-around;
+}
+
+.playerCircle {
+  width: 25px;
+  height: 25px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.cardDetails {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.playerSummary {
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 1.5rem;
 }
