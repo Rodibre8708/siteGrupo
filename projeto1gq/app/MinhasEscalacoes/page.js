@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./page.module.css";
-import Parse from "../../lib/back4appconfig.js"; // ajuste o caminho se necessário
+import Parse from "../../lib/back4appconfig.js"; // ajuste o caminho se necessário minhas
 
 // Ícones
 const BackIcon = () => (
