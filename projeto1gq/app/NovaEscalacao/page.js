@@ -7,7 +7,7 @@ import styles from "./page.module.css";
 import Parse from "../../lib/back4appconfig.js";
 import { FaUserCircle } from "react-icons/fa";
 
-// Ícone de voltar nova
+// Ícone de voltar
 const BackIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
