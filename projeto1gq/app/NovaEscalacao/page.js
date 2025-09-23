@@ -4,8 +4,8 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import styles from "./page.module.css";
+import Parse from "../../lib/back4appconfig.js";
 import { FaUserCircle } from "react-icons/fa";
-import Parse from "@/lib/back4appconfig";
 
 // Ícone de voltar
 const BackIcon = () => (
@@ -46,7 +46,9 @@ function CreateLineupComponent() {
   // Efeito para carregar as ligas do back-end
   const fetchLeagues = async () => {
     try {
-      const response = await fetch("http://localhost:3001/api/leagues");
+      const response = await fetch(
+        "https://escalacao-fc.onrender.com/api/leagues"
+      );
       const data = await response.json();
       setLeagues(data.competitions);
     } catch (error) {
@@ -59,7 +61,7 @@ function CreateLineupComponent() {
     if (!leagueId) return;
     try {
       const response = await fetch(
-        `http://localhost:3001/api/teams?leagueId=${leagueId}`
+        `https://escalacao-fc.onrender.com/api/teams?leagueId=${leagueId}`
       );
       const data = await response.json();
       setTeams(data.teams);
@@ -73,7 +75,7 @@ function CreateLineupComponent() {
     if (!teamId) return;
     try {
       const response = await fetch(
-        `http://localhost:3001/api/players?teamId=${teamId}`
+        `https://escalacao-fc.onrender.com/api/players?teamId=${teamId}`
       );
       const data = await response.json();
       setPlayers(data);
